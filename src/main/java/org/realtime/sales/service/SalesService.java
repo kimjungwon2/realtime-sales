@@ -23,7 +23,7 @@ public class SalesService {
     public void updateSales(String terminalId, String paymentMethod, int amount) {
 
         String dateKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
-        String key = "terminal:" + terminalId +"date:"+ dateKey +"method:" + paymentMethod;
+        String key = "terminal:" + terminalId +":date:"+ dateKey +":method:" + paymentMethod;
 
 
         LocalDateTime now = LocalDateTime.now();
