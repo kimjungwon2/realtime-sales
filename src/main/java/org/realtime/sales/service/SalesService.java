@@ -23,19 +23,21 @@ public class SalesService {
     public void updateSales(String terminalId, String paymentMethod, int amount) {
 
         String dateKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
-        String key = "terminal:" + terminalId +":date:"+ dateKey +":method:" + paymentMethod;
-
+        String key = "terminal:" + terminalId + ":date:" + dateKey + ":method:" + paymentMethod;
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime midnight = now.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
         long secondsUntilMidnight = ChronoUnit.SECONDS.between(now, midnight);
 
-
         redisTemplate.execute((RedisCallback<Object>) (connection) -> {
             byte[] redisKey = redisTemplate.getStringSerializer().serialize(key);
 
             connection.incrBy(redisKey, amount);
-            connection.expire(redisKey, secondsUntilMidnight);
+
+            Long ttl = connection.ttl(redisKey);
+            if (ttl == null || ttl == -1) {
+                connection.expire(redisKey, secondsUntilMidnight);
+            }
 
             return null;
         });
@@ -43,10 +45,8 @@ public class SalesService {
 
     public void updateSalesWithHincrby(String terminalId, String paymentMethod, int amount) {
         String dateKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
-        String key = "terminal:" + terminalId; // 키는 날짜 기준으로 설정
-
-        // 해당 terminalId와 paymentMethod에 대한 필드 키 생성
-        String field = "date:" + dateKey + ":method:" + paymentMethod;
+        String key = "terminal:" + terminalId; // 키는 terminalId 기준
+        String field = "date:" + dateKey + ":method:" + paymentMethod; // 필드 키 생성
 
         // 자정까지의 시간 계산
         LocalDateTime now = LocalDateTime.now();
@@ -60,8 +60,11 @@ public class SalesService {
             // HINCRBY로 해당 필드의 매출 값을 증가시킴
             connection.hIncrBy(redisKey, redisField, amount);
 
-            // TTL 설정 (자정까지)
-            connection.expire(redisKey, secondsUntilMidnight);
+            // 키의 TTL 확인
+            Long ttl = connection.ttl(redisKey);
+            if (ttl == null || ttl == -1) { // -1이면 만료 설정이 없는 상태
+                connection.expire(redisKey, secondsUntilMidnight);
+            }
 
             return null;
         });
