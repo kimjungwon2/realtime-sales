@@ -25,9 +25,7 @@ public class SalesService {
         String dateKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         String key = "terminal:" + terminalId + ":date:" + dateKey + ":method:" + paymentMethod +":dailySales";
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime midnight = now.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        long secondsUntilMidnight = ChronoUnit.SECONDS.between(now, midnight);
+        long secondsUntilExpiration = 27 * 60 * 60;
 
         redisTemplate.execute((RedisCallback<Object>) (connection) -> {
             byte[] redisKey = redisTemplate.getStringSerializer().serialize(key);
@@ -36,7 +34,7 @@ public class SalesService {
 
             Long ttl = connection.ttl(redisKey);
             if (ttl == null || ttl == -1) {
-                connection.expire(redisKey, secondsUntilMidnight);
+                connection.expire(redisKey, secondsUntilExpiration);
             }
 
             return null;
@@ -48,10 +46,8 @@ public class SalesService {
         String key = "terminal:" + terminalId; // 키는 terminalId 기준
         String field = "date:" + dateKey + ":method:" + paymentMethod+":dailySales"; // 필드 키 생성
 
-        // 자정까지의 시간 계산
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime midnight = now.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-        long secondsUntilMidnight = ChronoUnit.SECONDS.between(now, midnight);
+        // 27시간 (seconds)
+        long secondsUntilExpiration = 27 * 60 * 60;
 
         redisTemplate.execute((RedisCallback<Object>) (connection) -> {
             byte[] redisKey = redisTemplate.getStringSerializer().serialize(key);
@@ -62,8 +58,8 @@ public class SalesService {
 
             // 키의 TTL 확인
             Long ttl = connection.ttl(redisKey);
-            if (ttl == null || ttl == -1) { // -1이면 만료 설정이 없는 상태
-                connection.expire(redisKey, secondsUntilMidnight);
+            if (ttl == null || ttl == -1) {
+                connection.expire(redisKey, secondsUntilExpiration);
             }
 
             return null;
