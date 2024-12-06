@@ -23,7 +23,7 @@ public class SalesService {
     public void updateSales(String terminalId, String paymentMethod, int amount) {
 
         String dateKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
-        String key = "dailySales:" + dateKey + ":terminal:" + terminalId + ":method:" + paymentMethod;
+        String key = "terminal:" + terminalId +"date:"+ dateKey +"method:" + paymentMethod;
 
 
         LocalDateTime now = LocalDateTime.now();
@@ -43,10 +43,10 @@ public class SalesService {
 
     public void updateSalesWithHincrby(String terminalId, String paymentMethod, int amount) {
         String dateKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
-        String key = "dailySales:" + dateKey; // 키는 날짜 기준으로 설정
+        String key = "terminal:" + terminalId; // 키는 날짜 기준으로 설정
 
         // 해당 terminalId와 paymentMethod에 대한 필드 키 생성
-        String field = "terminal:" + terminalId + ":method:" + paymentMethod;
+        String field = "date:" + dateKey + ":method:" + paymentMethod;
 
         // 자정까지의 시간 계산
         LocalDateTime now = LocalDateTime.now();
