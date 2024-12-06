@@ -41,20 +41,30 @@ public class SalesService {
         });
     }
 
-    public void updateSalesWithHincrby(String terminalId, String paymentMethod, int amount) {
+    public void updateSalesWithHincrby(String terminalId, String paymentMethod, int amount, String transactionStatus) {
         String dateKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
-        String key = "terminal:" + terminalId; // 키는 terminalId 기준
-        String field = "date:" + dateKey + ":method:" + paymentMethod+":dailySales"; // 필드 키 생성
+        String key = "terminal:" + terminalId;
+        String field = "date:" + dateKey + ":method:" + paymentMethod + ":dailySales"; // 필드 키 생성
 
         // 27시간 (seconds)
         long secondsUntilExpiration = 27 * 60 * 60;
+
+        final int adjustedAmount;
+        if ("C".equals(transactionStatus)) {
+            adjustedAmount = -amount;
+        } else if ("A".equals(transactionStatus)) {
+            adjustedAmount = amount;
+        } else {
+            System.out.println("Invalid Transaction status: " + transactionStatus);
+            return;
+        }
 
         redisTemplate.execute((RedisCallback<Object>) (connection) -> {
             byte[] redisKey = redisTemplate.getStringSerializer().serialize(key);
             byte[] redisField = redisTemplate.getStringSerializer().serialize(field);
 
-            // HINCRBY로 해당 필드의 매출 값을 증가시킴
-            connection.hIncrBy(redisKey, redisField, amount);
+            // HINCRBY로 해당 필드의 매출 값을 증가시키거나 감소시킴
+            connection.hIncrBy(redisKey, redisField, adjustedAmount);
 
             // 키의 TTL 확인
             Long ttl = connection.ttl(redisKey);
