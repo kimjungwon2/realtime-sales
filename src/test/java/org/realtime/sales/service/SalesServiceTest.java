@@ -1,5 +1,6 @@
 package org.realtime.sales.service;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ class SalesServiceTest {
 
     @Autowired
     private SalesService salesService;
+
+    @Autowired
+    private SalesManageService salesManageService;
 
     @DisplayName("동시에 100개 요청")
     @Test
@@ -38,4 +42,10 @@ class SalesServiceTest {
         latch.await();
 
     }
+
+    @AfterEach
+    void cleanupRedis(){
+        salesManageService.cleanUpRedis("34242411");
+    }
+
 }

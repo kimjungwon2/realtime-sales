@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Service
-public class SalesRetrieveService {
+public class SalesManageService {
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public SalesRetrieveService(RedisTemplate<String, Object> redisTemplate) {
+    public SalesManageService(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
@@ -28,5 +28,21 @@ public class SalesRetrieveService {
 
             return valueBytes != null ? redisTemplate.getStringSerializer().deserialize(valueBytes) : null;
         });
+    }
+
+    void cleanUpRedis(String terminalId) {
+        String paymentMethod = "CARD"; // 테스트에서 사용한 paymentMethod
+        String dateKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+
+        // Redis 키 및 필드 생성
+        String key = "terminal:" + terminalId;
+        String field = "date:" + dateKey + ":method:" + paymentMethod + ":dailySales";
+
+        redisTemplate.opsForHash().delete(key, field);
+
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(key)) &&
+                redisTemplate.opsForHash().size(key) == 0) {
+            redisTemplate.delete(key);
+        }
     }
 }
