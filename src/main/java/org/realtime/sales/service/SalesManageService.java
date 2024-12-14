@@ -15,18 +15,27 @@ public class SalesManageService {
         this.redisTemplate = redisTemplate;
     }
 
-    public String getSalesValue(String terminalId, String paymentMethod) {
+    public Integer getSalesValue(String terminalId, String paymentMethod) {
         String dateKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         String key = "terminal:" + terminalId;
         String field = "date:" + dateKey + ":method:" + paymentMethod + ":dailySales"; // 필드 키 생성
 
-        return redisTemplate.execute((RedisCallback<String>) (connection) -> {
+        return redisTemplate.execute((RedisCallback<Integer>) (connection) -> {
             byte[] redisKey = redisTemplate.getStringSerializer().serialize(key);
             byte[] redisField = redisTemplate.getStringSerializer().serialize(field);
 
             byte[] valueBytes = connection.hGet(redisKey, redisField);
 
-            return valueBytes != null ? redisTemplate.getStringSerializer().deserialize(valueBytes) : null;
+            if (valueBytes != null) {
+                String valueStr = redisTemplate.getStringSerializer().deserialize(valueBytes);
+                try {
+                    return Integer.parseInt(valueStr);
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid number format for key: " + key + ", field: " + field);
+                    return null;
+                }
+            }
+            return null; // 값이 없으면 null 반환
         });
     }
 
