@@ -1,5 +1,6 @@
 package org.realtime.sales.service;
 
+import org.realtime.sales.service.dto.PaymentMethod;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,7 @@ public class SalesManageService {
         this.redisTemplate = redisTemplate;
     }
 
-    public Integer getSalesValue(String terminalId, String paymentMethod) {
+    public Integer getSalesValue(String terminalId, PaymentMethod paymentMethod) {
         String dateKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         String key = "terminal:" + terminalId;
         String field = "date:" + dateKey + ":method:" + paymentMethod + ":dailySales"; // 필드 키 생성

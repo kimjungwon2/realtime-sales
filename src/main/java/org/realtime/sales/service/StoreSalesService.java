@@ -1,5 +1,7 @@
 package org.realtime.sales.service;
 
+import org.realtime.sales.service.dto.PaymentMethod;
+import org.realtime.sales.service.dto.TodaySales;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
@@ -12,14 +14,23 @@ public class StoreSalesService {
         this.salesManageService = salesManageService;
     }
 
-    public Integer getTodayTotalSales(List<String> terminalIds, String method){
+    public TodaySales getTodayTotalSales(List<String> terminalIds,PaymentMethod paymentMethod){
         Integer todaySales = 0;
 
-        for(String terminalId : terminalIds){
-            todaySales += salesManageService.getSalesValue(terminalId, method);
+        List<PaymentMethod> paymentMethods = new ArrayList<>();
+        paymentMethods.add(PaymentMethod.POINT);
+        paymentMethods.add(PaymentMethod.CASH);
+        paymentMethods.add(PaymentMethod.CARD);
+
+
+        for (String terminalId : terminalIds) {
+            todaySales += salesManageService.getSalesValue(terminalId, paymentMethod);
         }
 
-        return todaySales;
+        return TodaySales.builder()
+                    .method(paymentMethod)
+                    .totalSales(todaySales)
+                    .build();
     }
 
 }
