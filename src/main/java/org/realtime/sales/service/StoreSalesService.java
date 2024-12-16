@@ -17,11 +17,6 @@ public class StoreSalesService {
     public TodaySales getTodayTotalSales(List<String> terminalIds,PaymentMethod paymentMethod){
         Integer todaySales = 0;
 
-        List<PaymentMethod> paymentMethods = new ArrayList<>();
-        paymentMethods.add(PaymentMethod.POINT);
-        paymentMethods.add(PaymentMethod.CASH);
-        paymentMethods.add(PaymentMethod.CARD);
-
 
         for (String terminalId : terminalIds) {
             todaySales += salesManageService.getSalesValue(terminalId, paymentMethod);

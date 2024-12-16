@@ -76,4 +76,25 @@ public class SalesService {
         });
     }
 
+    public void deductSales(String terminalId, String dateKey, String paymentMethod, int amount) {
+        // Redis 키 및 필드 생성
+        String key = "terminal:" + terminalId;
+        String field = "date:" + dateKey + ":method:" + paymentMethod + ":dailySales";
+
+        redisTemplate.execute((RedisCallback<Object>) (connection) -> {
+            byte[] redisKey = redisTemplate.getStringSerializer().serialize(key);
+            byte[] redisField = redisTemplate.getStringSerializer().serialize(field);
+
+            connection.hIncrBy(redisKey, redisField, -amount);
+
+            Long ttl = connection.ttl(redisKey);
+            if (ttl == null || ttl == -1) {
+                long secondsUntilExpiration = 27 * 60 * 60;
+                connection.expire(redisKey, secondsUntilExpiration);
+            }
+
+            return null;
+        });
+    }
+
 }
