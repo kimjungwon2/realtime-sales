@@ -3,7 +3,6 @@ package org.realtime.sales.api;
 import lombok.RequiredArgsConstructor;
 import org.realtime.sales.service.StoreSalesService;
 import org.realtime.sales.service.dto.TodaySales;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
