@@ -76,7 +76,7 @@ public class SalesService {
         });
     }
 
-    public void deductSales(String terminalId, String dateKey, String paymentMethod, int amount) {
+    public void deductTerminalSales(String terminalId, String dateKey, String paymentMethod, int amount) {
         // Redis 키 및 필드 생성
         String key = "terminal:" + terminalId;
         String field = "date:" + dateKey + ":method:" + paymentMethod + ":dailySales";
