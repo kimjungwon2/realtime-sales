@@ -23,29 +23,26 @@ class SalesServiceTest {
 
     @DisplayName("동시에 100개 요청")
     @Test
-    void updateSalesWithHincrby() throws InterruptedException {
+    void updateSalesWithHincrbyWithoutSync() throws InterruptedException {
         int threadCount = 100;
         ExecutorService executorService = Executors.newFixedThreadPool(32);
 
-        CountDownLatch latch = new CountDownLatch(threadCount);
-
-        for (int i =0; i < threadCount; i++) {
-            executorService.submit(()-> {
-                try {
-                    salesService.updateSalesWithHincrby("34242411", "CARD", 5000, "A");
-                } finally{
-                    latch.countDown();
-                }
+        for (int i = 0; i < threadCount; i++) {
+            executorService.submit(() -> {
+                salesService.updateSalesWithHincrby("34242411", "CARD", 5000, "A");
             });
         }
 
-        latch.await();
-
+        // 모든 스레드가 끝날 때까지 기다리지 않고 바로 종료하도록 수정
+        executorService.shutdown();
+        while (!executorService.isTerminated()) {
+            Thread.sleep(100); // 약간의 대기
+        }
     }
 
-    @AfterEach
-    void cleanupRedis(){
-        salesManageService.cleanUpRedis("34242411");
-    }
+//    @AfterEach
+//    void cleanupRedis(){
+//        salesManageService.cleanUpRedis("34242411");
+//    }
 
 }
